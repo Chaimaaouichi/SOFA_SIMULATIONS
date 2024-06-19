@@ -28,9 +28,12 @@ class FingerController(Sofa.Core.Controller):
         self.mechanicalObject = self.node.getObject('MechanicalObject')
         self.minPosIndex = None
         self.findMinXPosition()
-        self.setpoint = -20  # Desired x position of the top point (example value)
-        self.pid = PIDController(kp=1.0, ki=0.1, kd=0.01, setpoint=self.setpoint)
+        self.setpoint = -80  # Desired x position of the top point (example value)
+        self.pid = PIDController(kp=1.5, ki=0, kd=0, setpoint=self.setpoint)
         self.prev_time = time.time()
+        self.tensions = []  # List to store tension values
+        self.time_stamps = []  # List to store time stamp
+        self.filepath = "/home/rmal/backboneSofa/tension_values.txt"
 
     def findMinXPosition(self):
         # Find the position with the minimal x coordinate
@@ -54,12 +57,20 @@ class FingerController(Sofa.Core.Controller):
         # Update the PID controller
         tension = self.pid.update(current_x_position, dt)
 
+        self.tensions.append(tension)
+        self.time_stamps.append(current_time - self.time_stamps[0] if self.time_stamps else 0)
+
+        # Save the tension and time to a file
+        with open(self.filepath, "a") as file:
+            file.write(f"{self.time_stamps[-1]},{tension}\n")
+
         # Apply the calculated tension
+        
         self.node.aCableActuator.value = [max(0, tension)]  # Ensure tension is non-negative
 
         # Print the debug info
         self.printDebugInfo(tension, current_x_position)
-
+        
     def printDebugInfo(self, tension, current_x_position):
         print(f"Desired x position: {self.setpoint}")
         print(f"Current x position: {current_x_position}")
