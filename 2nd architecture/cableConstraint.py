@@ -4,6 +4,8 @@ from stlib3.scene import Scene
 from stlib3.physics.deformable import ElasticMaterialObject
 from stlib3.visuals import VisualModel
 from PIDController import FingerController
+from PIL import Image
+from PIL import ImageGrab
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/mesh/'
 
@@ -15,6 +17,8 @@ def createScene(rootNode):
 
     rootNode.addObject("FreeMotionAnimationLoop")
     rootNode.addObject("GenericConstraintSolver", maxIterations=1000, tolerance=0.001)
+    rootNode.addObject("OglViewport", screenPosition="10 0", screenSize="750 300", cameraPosition="-60 0 150", cameraOrientation="-0 -0 -0 1")
+    rootNode.addObject("OglViewport", screenPosition="775 0", screenSize="750 300", cameraPosition="-180 29 9", cameraOrientation="0 -0.707 0 0.707")
 
     finger = ElasticMaterialObject(name="finger",
                                    volumeMeshFileName=os.path.join(path, "finger.vtk"),
@@ -28,14 +32,19 @@ def createScene(rootNode):
 
     cable = finger.addChild('cable')
 
-    cable.addObject('MechanicalObject',
-                    name='MechanicalObject',
-                    position=[
-                        [-17.5, 12.5, 7.5],[-20.8, 12.5, 7.5],[-24.1, 12.5, 7.5],[-27.4, 12.5, 7.5],[-30.7, 12.5, 7.5],[-34.0, 12.5, 7.5],[-37.3, 12.5, 7.5],[-40.6, 12.5, 7.5],[-43.9, 12.5, 7.5],[-47.2, 12.5, 7.5],[-50.5, 12.5, 7.5],[-53.8, 12.5, 7.5],[-57.1, 12.5, 7.5],[-60.4, 12.5, 7.5],[-63.7, 12.5, 7.5],[-67.0, 12.5, 7.5],[-70.3, 12.5, 7.5],[-73.6, 12.5, 7.5],[-76.9, 12.5, 7.5],[-80.2, 12.5, 7.5],[-83.5, 12.5, 7.5]
-])
+    cable.createObject('MechanicalObject',   position=(
+                               "-17.5 12.5 2.5 " + "-32.5 12.5 2.5 " + "-47.5 12.5 2.5 " + "-62.5 12.5 2.5 " +
+    "-77.5 12.5 2.5 " + "-83.5 12.5 2.5 " + "-85.5 12.5 4.5 " + "-100.5 12.5 7.5 " +
+    "-85.5 12.5 8.5 " + "-83.5 12.5 10.5 " + "-77.5 12.5 12.5 " + "-62.5 12.5 12.5 " +
+    "-47.5 12.5 12.5 " + "-32.5 12.5 12.5 " + "-17.5 12.5 12.5"))
                         
 
-    cable.addObject('CableConstraint', name="aCableActuator", indices=list(range(0, 21)), pullPoint=[0.0, 12.5, 7.5])
+    cable.createObject('CableConstraint',
+                                              name="aCableActuator",
+
+                                              indices='0 1 2 3 4 5 6 7 8 9 10 11 12 13 14',
+
+                                             pullPoint=[0.0, 12.5, 7.5])
     cable.addObject('BarycentricMapping')
     
     # Instantiate the FingerController
@@ -50,7 +59,7 @@ def createScene(rootNode):
 
     print(f"Index of the point to track: {min_pos_index}")
 
-    finger.addObject('Monitor',
+    '''finger.addObject('Monitor',
                      template='Vec3d',
                      name='MonitorTrackedPoint',
                      listening='1',
@@ -58,7 +67,7 @@ def createScene(rootNode):
                      showPositions='1',
                      PositionsColor='0 1 0 1',  # Green color for positions
                      sizeFactor='5.0',
-                     ExportPositions='true')  # Enable export of positions
+                     ExportPositions='true')  # Enable export of positions'''
 
     return rootNode
 
